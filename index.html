@@ -3,9 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Enquesta d'aula — Part A</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    
+    <div class="container">
+        <div class="card">
+            <h2>Formulari d'enquesta</h2>
+            <form id="surveyForm">
+                <label for="grup">Grup</label>
+                <select id="grup" required>
+                    <option value="">-- Tria un grup --</option>
+                    <option>DAW1A</option>
+                    <option>DAW1B</option>
+                    <option>ASIX1</option>
+                </select>
+
+                <label for="puntuacio">Satisfacció global (1–5)</label>
+                <input id="puntuacio" type="number" min="1" max="5" value="5" required />
+
+                <label for="comentari">Comentari (opcional)</label>
+                <textarea id="comentari" placeholder="Què milloraries de la sessió?"></textarea>
+
+                <button type="submit">Guardar resposta</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Panell d'analítica</h2>
+            <div class="filter-row">
+                <label for="filter">Filtre del panell</label>
+                <select id="filter">
+                    <option value="Tots">Tots</option>
+                    <option>DAW1A</option>
+                    <option>DAW1B</option>
+                    <option>ASIX1</option>
+                </select>
+            </div>
+
+            <div id="metaInfo"><small class="muted">Sense dades encara.</small></div>
+
+            <div class="kpis" id="kpis" style="display:none">
+                <div class="kpi"><div id="count">0</div><small class="muted">Respostes</small></div>
+                <div class="kpi"><div id="avg">0.00</div><small class="muted">Mitjana</small></div>
+                <div class="kpi"><div id="positive">0%</div><small class="muted">% 4–5</small></div>
+            </div>
+
+            <div>
+                <h3 style="font-size:14px;margin:6px 0">Distribució de valoracions</h3>
+                <div id="distribution"></div>
+            </div>
+
+            <div class="responses">
+                <h3 style="font-size:14px;margin:6px 0">Últimes respostes</h3>
+                <div id="responsesList"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
 </body>
 </html>
