@@ -15,26 +15,31 @@ const metaInfo = document.getElementById('metaInfo');
 
 let respostes = [];
 let nextId = 1;
+let supabaseClient = null;
 
 const SUPABASE_URL = 'https://uszwkzrrzzdhquotjzho.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzendrenJyenpkaHF1b3RqemhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjkwNjcsImV4cCI6MjA5NDk0NTA2N30.Vf2UKHhSKT0HwgzUAlENYyxdAStBP7BC4GRMg9WGAhM';
 const useSupabase = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY');
+let supabaseAvailable = false;
 
 function createSupabaseClient(){
     if(!useSupabase){
         return null;
     }
-    if(typeof supabase !== 'undefined' && typeof supabase.createClient === 'function'){
-        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    try {
+        if(typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function'){
+            const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseAvailable = true;
+            return client;
+        }
+    } catch(err) {
+        console.warn('Supabase not available:', err.message);
     }
-    if(typeof createClient === 'function'){
-        return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    }
-    console.warn('Supabase client no disponible: revisa si has cargado el script CDN correctamente.');
+    console.warn('Supabase no disponible. Trabajando en modo offline con almacenamiento local.');
     return null;
 }
 
-const supabaseClient = createSupabaseClient();
+// Supabase client will be initialized in DOMContentLoaded
 
 // Chart.js instances (inicializades més endavant si existeixen els canvases)
 let pieDistChart = null;
@@ -88,51 +93,62 @@ function formatDate(iso){
 }
 
 async function loadResponses(){
-    if(!useSupabase){
+    if(!useSupabase || !supabaseAvailable || !supabaseClient){
         updatePanel();
         return;
     }
 
-    const { data, error } = await supabaseClient
-        .from('respostes')
-        .select('*')
-        .order('data', { ascending: false });
+    try {
+        const { data, error } = await supabaseClient
+            .from('respostes')
+            .select('*')
+            .order('data', { ascending: false });
 
-    if(error){
-        console.error('Supabase read error:', error);
-        metaInfo.innerHTML = '<small class="muted">Error llegint dades de Supabase.</small>';
-        return;
+        if(error){
+            console.error('Supabase read error:', error);
+            metaInfo.innerHTML = '<small class="muted">Error llegint dades de Supabase.</small>';
+            return;
+        }
+
+        respostes = data.map(item => ({
+            ...item,
+            puntuacio: Number(item.puntuacio)
+        }));
+    } catch(err) {
+        console.error('Failed to load from Supabase:', err);
     }
-
-    respostes = data.map(item => ({
-        ...item,
-        puntuacio: Number(item.puntuacio)
-    }));
     updatePanel();
 }
 
 async function saveResponse(grup, puntuacio, comentari){
     const now = new Date().toISOString();
 
-    if(!useSupabase){
+    if(!useSupabase || !supabaseAvailable || !supabaseClient){
         const resp = { id: nextId++, grup, puntuacio, comentari, data: now };
         respostes.unshift(resp);
         return resp;
     }
 
-    const { data, error } = await supabaseClient
-        .from('respostes')
-        .insert([{ grup, puntuacio, comentari, data: now }])
-        .select()
-        .single();
+    try {
+        const { data, error } = await supabaseClient
+            .from('respostes')
+            .insert([{ grup, puntuacio, comentari, data: now }])
+            .select()
+            .single();
 
-    if(error){
-        throw error;
+        if(error){
+            throw error;
+        }
+
+        const saved = { ...data, puntuacio: Number(data.puntuacio) };
+        respostes.unshift(saved);
+        return saved;
+    } catch(err) {
+        console.error('Failed to save to Supabase, using local storage:', err);
+        const resp = { id: nextId++, grup, puntuacio, comentari, data: now };
+        respostes.unshift(resp);
+        return resp;
     }
-
-    const saved = { ...data, puntuacio: Number(data.puntuacio) };
-    respostes.unshift(saved);
-    return saved;
 }
 
 function updatePanel(){
@@ -272,6 +288,7 @@ updatePanel();
 
 // Inicialitzar gràfiques i carregar respostes al final (després que el DOM carregui)
 document.addEventListener('DOMContentLoaded', async ()=>{
+    supabaseClient = createSupabaseClient();
     initCharts();
     await loadResponses();
 });
