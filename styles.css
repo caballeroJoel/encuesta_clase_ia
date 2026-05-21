@@ -67,7 +67,7 @@ button {
 
 .kpis {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(4, minmax(140px, 1fr));
 	gap: 12px;
 	margin-bottom: 12px;
 }
@@ -124,14 +124,18 @@ small.muted {
 	color: var(--muted);
 }
 
-.charts-grid{
-	display:grid;
-	grid-template-columns:1fr 300px;
-	gap:12px;
+.charts-grid {
+	display: grid;
+	grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr);
+	gap: 12px;
 }
 
-canvas{
-	width:100% !important;
-	height:auto !important;
-	display:block;
+.chart-card {
+	padding: 14px;
+}
+
+canvas {
+	width: 100% !important;
+	height: auto !important;
+	display: block;
 }

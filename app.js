@@ -7,6 +7,7 @@ const filterEl = document.getElementById('filter');
 const countEl = document.getElementById('count');
 const avgEl = document.getElementById('avg');
 const positiveEl = document.getElementById('positive');
+const groupAnalizedEl = document.getElementById('groupAnalized');
 const kpisEl = document.getElementById('kpis');
 const distributionEl = document.getElementById('distribution');
 const responsesListEl = document.getElementById('responsesList');
@@ -16,40 +17,45 @@ let respostes = [];
 let nextId = 1;
 
 // Chart.js instances (inicializades més endavant si existeixen els canvases)
-let barChart = null;
-let pieChart = null;
+let pieDistChart = null;
+let piePosChart = null;
 let avgChart = null;
 
 function initCharts(){
-    // comprovar que els elements existeixen
-    const barEl = document.getElementById('barChart');
-    const pieEl = document.getElementById('pieChart');
+    const pieDistEl = document.getElementById('pieDistChart');
+    const piePosEl = document.getElementById('piePosChart');
     const avgEl = document.getElementById('avgChart');
     if(window.Chart){
-        if(barEl){
-            const barCtx = barEl.getContext('2d');
-            barChart = new Chart(barCtx, {
-                type: 'bar',
+        if(pieDistEl){
+            const pieDistCtx = pieDistEl.getContext('2d');
+            pieDistChart = new Chart(pieDistCtx, {
+                type: 'pie',
                 data: {
                     labels: ['1','2','3','4','5'],
-                    datasets: [{ label: 'Respostes', data: [0,0,0,0,0], backgroundColor: '#2563eb' }]
+                    datasets: [{ data: [0,0,0,0,0], backgroundColor: ['#f97316','#f59e0b','#facc15','#34d399','#2563eb'] }]
                 },
-                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, precision: 0 } } }
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
         }
-        if(pieEl){
-            const pieCtx = pieEl.getContext('2d');
-            pieChart = new Chart(pieCtx, {
+        if(piePosEl){
+            const piePosCtx = piePosEl.getContext('2d');
+            piePosChart = new Chart(piePosCtx, {
                 type: 'pie',
-                data: { labels: ['Positives (4-5)','No positives (1-3)'], datasets: [{ data: [0,0], backgroundColor: ['#10b981','#f59e0b'] }] },
-                options: { responsive: true }
+                data: {
+                    labels: ['Positives (4-5)','No positives (1-3)'],
+                    datasets: [{ data: [0,0], backgroundColor: ['#10b981','#f59e0b'] }]
+                },
+                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
             });
         }
         if(avgEl){
             const avgCtx = avgEl.getContext('2d');
             avgChart = new Chart(avgCtx, {
                 type: 'bar',
-                data: { labels: ['DAW1A','DAW1B','ASIX1'], datasets: [{ label: 'Mitjana', data: [0,0,0], backgroundColor: ['#2563eb','#3b82f6','#60a5fa'] }] },
+                data: {
+                    labels: ['DAW1A','DAW1B','ASIX1'],
+                    datasets: [{ label: 'Mitjana', data: [0,0,0], backgroundColor: ['#2563eb','#3b82f6','#60a5fa'] }]
+                },
                 options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { suggestedMin: 0, suggestedMax: 5 } } }
             });
         }
@@ -83,6 +89,7 @@ function updatePanel(){
     countEl.textContent = count;
     avgEl.textContent = avg.toFixed(2);
     positiveEl.textContent = ((positives/count)*100).toFixed(1)+'%';
+    groupAnalizedEl.textContent = filter;
 
     // distribution 1..5
     const dist = [0,0,0,0,0];
@@ -112,14 +119,14 @@ function updatePanel(){
     }
 
             // Actualitzar gràfiques Chart.js si existeixen
-            if(barChart){
-                barChart.data.datasets[0].data = dist;
-                barChart.update();
+            if(pieDistChart){
+                pieDistChart.data.datasets[0].data = dist;
+                pieDistChart.update();
             }
 
-            if(pieChart){
-                pieChart.data.datasets[0].data = [positives, count-positives];
-                pieChart.update();
+            if(piePosChart){
+                piePosChart.data.datasets[0].data = [positives, count-positives];
+                piePosChart.update();
             }
 
             if(avgChart){
