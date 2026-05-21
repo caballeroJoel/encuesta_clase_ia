@@ -106,11 +106,27 @@ button {
 }
 
 .resp {
-	border-left: 4px solid #e5e7eb;
+	border-left-width: 4px;
+	border-left-style: solid;
 	padding: 10px;
 	margin-bottom: 8px;
 	border-radius: 6px;
 	background: #fcfdff;
+}
+
+.resp-daw1a {
+	border-left-color: #2563eb;
+	background: #eff6ff;
+}
+
+.resp-daw1b {
+	border-left-color: #059669;
+	background: #ecfdf5;
+}
+
+.resp-asix1 {
+	border-left-color: #d97706;
+	background: #fff7ed;
 }
 
 .filter-row {

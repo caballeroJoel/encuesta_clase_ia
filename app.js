@@ -145,7 +145,8 @@ function updatePanel(){
     const sorted = filtered.slice().sort((a,b)=>new Date(b.data)-new Date(a.data));
     sorted.forEach(r=>{
         const d = document.createElement('div');
-        d.className='resp';
+        const groupClass = 'resp-' + r.grup.toLowerCase();
+        d.className = `resp ${groupClass}`;
         d.innerHTML = `<strong>${r.grup}</strong> — <small class="muted">${formatDate(r.data)}</small><div><strong>Puntuació: ${r.puntuacio}/5</strong></div>${r.comentari?'<div>'+r.comentari+'</div>':''}`;
         responsesListEl.appendChild(d);
     });
