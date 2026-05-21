@@ -96,6 +96,35 @@ git push -u origin dev
 - Nota al README explicant que `main` és la branca de producció i `dev` la branca de desenvolupament.
 - Opcional: llista breu del PR `dev -> main` i les passes de desplegament.
 
+## Part D — Supabase (persistència)
+1) Crear projecte Supabase
+- Registra't a Supabase i crea un projecte nou.
+- Agafa la URL del projecte i l'ANON KEY des de la secció `Settings -> API`.
+
+2) Crear la taula `respostes`
+- Taula: `respostes`
+- Columnes:
+  - `id` — integer, PK, autoincrement.
+  - `grup` — text.
+  - `puntuacio` — integer.
+  - `comentari` — text.
+  - `data` — timestamptz.
+
+3) Configurar les credencials
+- A `app.js`, reemplaça:
+  - `https://YOUR-PROJECT.supabase.co` per la teva URL de Supabase.
+  - `YOUR_SUPABASE_ANON_KEY` per la teva clau anònima.
+- En Vercel, pots guardar aquests valors com a variables d'entorn si després fas servir un procés de build; per ara la clau anònima es pot usar en client perquè és pública.
+
+4) Com funciona l'app
+- `loadResponses()` llegeix la taula `respostes` des de Supabase cada vegada que carregues la pàgina.
+- El formulari inserta una nova fila a la taula amb `grup`, `puntuacio`, `comentari` i `data`.
+- Després d'inserir, l'app actualitza la llista local i mostra les dades al panell.
+
+5) Verificar
+- A Supabase, comprova la taula `respostes` després de guardar almenys una resposta.
+- A l'app, comprova que les noves respostes apareixen al panell i que les gràfiques canvien.
+
 Desplegado
 
 Exemple curt de conclusions (a ajustar amb les teves dades)

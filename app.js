@@ -16,6 +16,11 @@ const metaInfo = document.getElementById('metaInfo');
 let respostes = [];
 let nextId = 1;
 
+const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const useSupabase = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY');
+const supabaseClient = useSupabase ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
 // Chart.js instances (inicializades més endavant si existeixen els canvases)
 let pieDistChart = null;
 let piePosChart = null;
@@ -65,6 +70,54 @@ function initCharts(){
 function formatDate(iso){
     const d = new Date(iso);
     return d.toLocaleString();
+}
+
+async function loadResponses(){
+    if(!useSupabase){
+        updatePanel();
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('respostes')
+        .select('*')
+        .order('data', { ascending: false });
+
+    if(error){
+        console.error('Supabase read error:', error);
+        metaInfo.innerHTML = '<small class="muted">Error llegint dades de Supabase.</small>';
+        return;
+    }
+
+    respostes = data.map(item => ({
+        ...item,
+        puntuacio: Number(item.puntuacio)
+    }));
+    updatePanel();
+}
+
+async function saveResponse(grup, puntuacio, comentari){
+    const now = new Date().toISOString();
+
+    if(!useSupabase){
+        const resp = { id: nextId++, grup, puntuacio, comentari, data: now };
+        respostes.unshift(resp);
+        return resp;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('respostes')
+        .insert([{ grup, puntuacio, comentari, data: now }])
+        .select()
+        .single();
+
+    if(error){
+        throw error;
+    }
+
+    const saved = { ...data, puntuacio: Number(data.puntuacio) };
+    respostes.unshift(saved);
+    return saved;
 }
 
 function updatePanel(){
@@ -152,7 +205,9 @@ function updatePanel(){
     });
 }
 
-form.addEventListener('submit', (e)=>{
+const submitButton = form.querySelector('button[type="submit"]');
+
+form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const grup = grupEl.value.trim();
     const puntuacio = Number(puntuacioEl.value);
@@ -167,15 +222,21 @@ form.addEventListener('submit', (e)=>{
         return;
     }
 
-    const resp = { id: nextId++, grup, puntuacio, comentari, data: new Date().toISOString() };
-    respostes.push(resp);
-
-    // reset form minimal
-    comentariEl.value='';
-    puntuacioEl.value = 5;
-
-    // update UI
-    updatePanel();
+    submitButton.disabled = true;
+    submitButton.textContent = 'Guardant...';
+    try {
+        await saveResponse(grup, puntuacio, comentari);
+        comentariEl.value = '';
+        puntuacioEl.value = 5;
+        filterEl.value = 'Tots';
+        updatePanel();
+    } catch(error){
+        console.error('Error guardant resposta:', error);
+        alert('Hi ha hagut un error guardant la resposta. Revisa la consola.');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Guardar resposta';
+    }
 });
 
 filterEl.addEventListener('change', updatePanel);
@@ -187,8 +248,15 @@ respostes.push({id:nextId++,grup:'DAW1B',puntuacio:3,comentari:'Millorar exemple
 updatePanel();
 */
 
-// Inicialitzar gràfiques al final (després que el DOM carregui)
-document.addEventListener('DOMContentLoaded', ()=>{
+// optional: seed some example data for testing (comment out if not wanted)
+/*
+respostes.push({id:nextId++,grup:'DAW1A',puntuacio:4,comentari:'Tot clar',data:new Date().toISOString()});
+respostes.push({id:nextId++,grup:'DAW1B',puntuacio:3,comentari:'Millorar exemples',data:new Date().toISOString()});
+updatePanel();
+*/
+
+// Inicialitzar gràfiques i carregar respostes al final (després que el DOM carregui)
+document.addEventListener('DOMContentLoaded', async ()=>{
     initCharts();
-    updatePanel();
+    await loadResponses();
 });
