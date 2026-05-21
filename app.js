@@ -16,8 +16,8 @@ const metaInfo = document.getElementById('metaInfo');
 let respostes = [];
 let nextId = 1;
 
-const SUPABASE_URL = 'https://YOUR-PROJECT.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://uszwkzrrzzdhquotjzho.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzendrenJyenpkaHF1b3RqemhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjkwNjcsImV4cCI6MjA5NDk0NTA2N30.Vf2UKHhSKT0HwgzUAlENYyxdAStBP7BC4GRMg9WGAhM';
 const useSupabase = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY');
 const supabaseClient = useSupabase ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
