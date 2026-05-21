@@ -15,6 +15,47 @@ const metaInfo = document.getElementById('metaInfo');
 let respostes = [];
 let nextId = 1;
 
+// Chart.js instances (inicializades més endavant si existeixen els canvases)
+let barChart = null;
+let pieChart = null;
+let avgChart = null;
+
+function initCharts(){
+    // comprovar que els elements existeixen
+    const barEl = document.getElementById('barChart');
+    const pieEl = document.getElementById('pieChart');
+    const avgEl = document.getElementById('avgChart');
+    if(window.Chart){
+        if(barEl){
+            const barCtx = barEl.getContext('2d');
+            barChart = new Chart(barCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['1','2','3','4','5'],
+                    datasets: [{ label: 'Respostes', data: [0,0,0,0,0], backgroundColor: '#2563eb' }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, precision: 0 } } }
+            });
+        }
+        if(pieEl){
+            const pieCtx = pieEl.getContext('2d');
+            pieChart = new Chart(pieCtx, {
+                type: 'pie',
+                data: { labels: ['Positives (4-5)','No positives (1-3)'], datasets: [{ data: [0,0], backgroundColor: ['#10b981','#f59e0b'] }] },
+                options: { responsive: true }
+            });
+        }
+        if(avgEl){
+            const avgCtx = avgEl.getContext('2d');
+            avgChart = new Chart(avgCtx, {
+                type: 'bar',
+                data: { labels: ['DAW1A','DAW1B','ASIX1'], datasets: [{ label: 'Mitjana', data: [0,0,0], backgroundColor: ['#2563eb','#3b82f6','#60a5fa'] }] },
+                options: { responsive: true, indexAxis: 'y', plugins: { legend: { display: false } }, scales: { x: { suggestedMin: 0, suggestedMax: 5 } } }
+            });
+        }
+    }
+}
+
 function formatDate(iso){
     const d = new Date(iso);
     return d.toLocaleString();
@@ -47,7 +88,7 @@ function updatePanel(){
     const dist = [0,0,0,0,0];
     filtered.forEach(r=> dist[r.puntuacio-1]++);
 
-    distributionEl.innerHTML = '';
+            distributionEl.innerHTML = '';
     for(let i=0;i<5;i++){
         const row = document.createElement('div');
         row.className = 'bar-row';
@@ -69,6 +110,28 @@ function updatePanel(){
         row.appendChild(num);
         distributionEl.appendChild(row);
     }
+
+            // Actualitzar gràfiques Chart.js si existeixen
+            if(barChart){
+                barChart.data.datasets[0].data = dist;
+                barChart.update();
+            }
+
+            if(pieChart){
+                pieChart.data.datasets[0].data = [positives, count-positives];
+                pieChart.update();
+            }
+
+            if(avgChart){
+                const groups = ['DAW1A','DAW1B','ASIX1'];
+                const avgPerGroup = groups.map(g=>{
+                    const items = filtered.filter(r=>r.grup===g);
+                    if(items.length===0) return 0;
+                    return +(items.reduce((s,x)=>s+x.puntuacio,0)/items.length).toFixed(2);
+                });
+                avgChart.data.datasets[0].data = avgPerGroup;
+                avgChart.update();
+            }
 
     // responses list (most recent first)
     responsesListEl.innerHTML = '';
@@ -115,3 +178,9 @@ respostes.push({id:nextId++,grup:'DAW1A',puntuacio:4,comentari:'Tot clar',data:n
 respostes.push({id:nextId++,grup:'DAW1B',puntuacio:3,comentari:'Millorar exemples',data:new Date().toISOString()});
 updatePanel();
 */
+
+// Inicialitzar gràfiques al final (després que el DOM carregui)
+document.addEventListener('DOMContentLoaded', ()=>{
+    initCharts();
+    updatePanel();
+});

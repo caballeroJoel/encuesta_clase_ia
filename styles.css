@@ -123,3 +123,15 @@ button {
 small.muted {
 	color: var(--muted);
 }
+
+.charts-grid{
+	display:grid;
+	grid-template-columns:1fr 300px;
+	gap:12px;
+}
+
+canvas{
+	width:100% !important;
+	height:auto !important;
+	display:block;
+}
