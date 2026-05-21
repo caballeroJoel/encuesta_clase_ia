@@ -67,7 +67,7 @@ button {
 
 .kpis {
 	display: grid;
-	grid-template-columns: repeat(3, 1fr);
+	grid-template-columns: repeat(4, minmax(140px, 1fr));
 	gap: 12px;
 	margin-bottom: 12px;
 }
@@ -106,11 +106,27 @@ button {
 }
 
 .resp {
-	border-left: 4px solid #e5e7eb;
+	border-left-width: 4px;
+	border-left-style: solid;
 	padding: 10px;
 	margin-bottom: 8px;
 	border-radius: 6px;
 	background: #fcfdff;
+}
+
+.resp-daw1a {
+	border-left-color: #2563eb;
+	background: #eff6ff;
+}
+
+.resp-daw1b {
+	border-left-color: #059669;
+	background: #ecfdf5;
+}
+
+.resp-asix1 {
+	border-left-color: #d97706;
+	background: #fff7ed;
 }
 
 .filter-row {
@@ -122,4 +138,20 @@ button {
 
 small.muted {
 	color: var(--muted);
+}
+
+.charts-grid {
+	display: grid;
+	grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr);
+	gap: 12px;
+}
+
+.chart-card {
+	padding: 14px;
+}
+
+canvas {
+	width: 100% !important;
+	height: auto !important;
+	display: block;
 }

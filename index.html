@@ -47,11 +47,28 @@
                 <div class="kpi"><div id="count">0</div><small class="muted">Respostes</small></div>
                 <div class="kpi"><div id="avg">0.00</div><small class="muted">Mitjana</small></div>
                 <div class="kpi"><div id="positive">0%</div><small class="muted">% 4–5</small></div>
+                <div class="kpi"><div id="groupAnalized">Tots</div><small class="muted">Grup analitzat</small></div>
             </div>
 
             <div>
                 <h3 style="font-size:14px;margin:6px 0">Distribució de valoracions</h3>
                 <div id="distribution"></div>
+            </div>
+
+            <div class="charts-grid" style="margin-top:12px">
+                <div class="card chart-card">
+                    <h4 style="margin:6px 0;font-size:13px">Qüesito de puntuacions</h4>
+                    <canvas id="pieDistChart" width="300" height="160"></canvas>
+                </div>
+                <div class="card chart-card">
+                    <h4 style="margin:6px 0;font-size:13px">Qüesito positives (4–5)</h4>
+                    <canvas id="piePosChart" width="300" height="160"></canvas>
+                </div>
+            </div>
+
+            <div style="margin-top:12px" class="card">
+                <h4 style="margin:6px 0;font-size:13px">Comparativa de mitjana per grup</h4>
+                <canvas id="avgChart" width="600" height="120"></canvas>
             </div>
 
             <div class="responses">
@@ -61,6 +78,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
