@@ -96,6 +96,8 @@ git push -u origin dev
 - Nota al README explicant que `main` és la branca de producció i `dev` la branca de desenvolupament.
 - Opcional: llista breu del PR `dev -> main` i les passes de desplegament.
 
+Desplegado
+
 Exemple curt de conclusions (a ajustar amb les teves dades)
 - "La mitjana global és 3.8; DAW1A té la mitjana més alta i ASIX1 la més baixa."
 - "El 60% de respostes són positives (4–5), per tant la majoria està satisfeta però cal millorar en grups amb mitjanes baixes."
