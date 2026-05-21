@@ -61,6 +61,43 @@ Consells finals
 - Usa Chart.js per estalviar temps amb gràfiques.
 - Prova amb 10–20 respostes reals per poder extreure conclusions vàlides.
 
+## Part C — GitHub i Vercel
+1) Preparar el repositori local
+- `git init` (només si encara no hi ha repo local).
+- `git add .` i `git commit -m "IA4 + IA4 Part B completat"`.
+- Crear la branca de treball: `git checkout -b dev`.
+
+2) Crear el repositori a GitHub
+- Crea un nou repositori públic o privat a GitHub.
+- Connecta el remot local amb:
+```
+git remote add origin <URL-del-repo>
+```
+- Puja la branca `dev`:
+```
+git push -u origin dev
+```
+
+3) Fluix de treball amb `dev` i `main`
+- Desenvolupa i fa commits a la branca `dev`.
+- Quan la versió estigui estable, crea un pull request `dev → main` a GitHub.
+- Revisa el PR i fes merge a `main`.
+- `main` serà la branca de producció que desplegarà Vercel.
+
+4) Desplegar a Vercel
+- A Vercel, importa el projecte des de GitHub.
+- Selecciona la branca `main` per al desplegament.
+- Vercel detectarà que és una app estàtica i crearà la URL pública.
+- Comprova que `index.html`, `styles.css` i `app.js` es carreguen correctament.
+
+5) Què lliurar
+- Enllaç del repositori GitHub.
+- URL pública de Vercel operativa.
+- Nota al README explicant que `main` és la branca de producció i `dev` la branca de desenvolupament.
+- Opcional: llista breu del PR `dev -> main` i les passes de desplegament.
+
+Desplegado
+
 Exemple curt de conclusions (a ajustar amb les teves dades)
 - "La mitjana global és 3.8; DAW1A té la mitjana més alta i ASIX1 la més baixa."
 - "El 60% de respostes són positives (4–5), per tant la majoria està satisfeta però cal millorar en grups amb mitjanes baixes."
