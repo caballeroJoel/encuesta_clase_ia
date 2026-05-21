@@ -19,7 +19,22 @@ let nextId = 1;
 const SUPABASE_URL = 'https://uszwkzrrzzdhquotjzho.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzendrenJyenpkaHF1b3RqemhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjkwNjcsImV4cCI6MjA5NDk0NTA2N30.Vf2UKHhSKT0HwgzUAlENYyxdAStBP7BC4GRMg9WGAhM';
 const useSupabase = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY');
-const supabaseClient = useSupabase ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+function createSupabaseClient(){
+    if(!useSupabase){
+        return null;
+    }
+    if(typeof supabase !== 'undefined' && typeof supabase.createClient === 'function'){
+        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    if(typeof createClient === 'function'){
+        return createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    console.warn('Supabase client no disponible: revisa si has cargado el script CDN correctamente.');
+    return null;
+}
+
+const supabaseClient = createSupabaseClient();
 
 // Chart.js instances (inicializades més endavant si existeixen els canvases)
 let pieDistChart = null;
