@@ -15,6 +15,31 @@ const metaInfo = document.getElementById('metaInfo');
 
 let respostes = [];
 let nextId = 1;
+let supabaseClient = null;
+
+const SUPABASE_URL = 'https://uszwkzrrzzdhquotjzho.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVzendrenJyenpkaHF1b3RqemhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzNjkwNjcsImV4cCI6MjA5NDk0NTA2N30.Vf2UKHhSKT0HwgzUAlENYyxdAStBP7BC4GRMg9WGAhM';
+const useSupabase = !SUPABASE_URL.includes('YOUR-PROJECT') && !SUPABASE_ANON_KEY.includes('YOUR_SUPABASE_ANON_KEY');
+let supabaseAvailable = false;
+
+function createSupabaseClient(){
+    if(!useSupabase){
+        return null;
+    }
+    try {
+        if(typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function'){
+            const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            supabaseAvailable = true;
+            return client;
+        }
+    } catch(err) {
+        console.warn('Supabase not available:', err.message);
+    }
+    console.warn('Supabase no disponible. Trabajando en modo offline con almacenamiento local.');
+    return null;
+}
+
+// Supabase client will be initialized in DOMContentLoaded
 
 // Chart.js instances (inicializades més endavant si existeixen els canvases)
 let pieDistChart = null;
@@ -65,6 +90,65 @@ function initCharts(){
 function formatDate(iso){
     const d = new Date(iso);
     return d.toLocaleString();
+}
+
+async function loadResponses(){
+    if(!useSupabase || !supabaseAvailable || !supabaseClient){
+        updatePanel();
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('respostes')
+            .select('*')
+            .order('data', { ascending: false });
+
+        if(error){
+            console.error('Supabase read error:', error);
+            metaInfo.innerHTML = '<small class="muted">Error llegint dades de Supabase.</small>';
+            return;
+        }
+
+        respostes = data.map(item => ({
+            ...item,
+            puntuacio: Number(item.puntuacio)
+        }));
+    } catch(err) {
+        console.error('Failed to load from Supabase:', err);
+    }
+    updatePanel();
+}
+
+async function saveResponse(grup, puntuacio, comentari){
+    const now = new Date().toISOString();
+
+    if(!useSupabase || !supabaseAvailable || !supabaseClient){
+        const resp = { id: nextId++, grup, puntuacio, comentari, data: now };
+        respostes.unshift(resp);
+        return resp;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('respostes')
+            .insert([{ grup, puntuacio, comentari, data: now }])
+            .select()
+            .single();
+
+        if(error){
+            throw error;
+        }
+
+        const saved = { ...data, puntuacio: Number(data.puntuacio) };
+        respostes.unshift(saved);
+        return saved;
+    } catch(err) {
+        console.error('Failed to save to Supabase, using local storage:', err);
+        const resp = { id: nextId++, grup, puntuacio, comentari, data: now };
+        respostes.unshift(resp);
+        return resp;
+    }
 }
 
 function updatePanel(){
@@ -152,7 +236,9 @@ function updatePanel(){
     });
 }
 
-form.addEventListener('submit', (e)=>{
+const submitButton = form.querySelector('button[type="submit"]');
+
+form.addEventListener('submit', async (e)=>{
     e.preventDefault();
     const grup = grupEl.value.trim();
     const puntuacio = Number(puntuacioEl.value);
@@ -167,15 +253,21 @@ form.addEventListener('submit', (e)=>{
         return;
     }
 
-    const resp = { id: nextId++, grup, puntuacio, comentari, data: new Date().toISOString() };
-    respostes.push(resp);
-
-    // reset form minimal
-    comentariEl.value='';
-    puntuacioEl.value = 5;
-
-    // update UI
-    updatePanel();
+    submitButton.disabled = true;
+    submitButton.textContent = 'Guardant...';
+    try {
+        await saveResponse(grup, puntuacio, comentari);
+        comentariEl.value = '';
+        puntuacioEl.value = 5;
+        filterEl.value = 'Tots';
+        updatePanel();
+    } catch(error){
+        console.error('Error guardant resposta:', error);
+        alert('Hi ha hagut un error guardant la resposta. Revisa la consola.');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Guardar resposta';
+    }
 });
 
 filterEl.addEventListener('change', updatePanel);
@@ -187,8 +279,16 @@ respostes.push({id:nextId++,grup:'DAW1B',puntuacio:3,comentari:'Millorar exemple
 updatePanel();
 */
 
-// Inicialitzar gràfiques al final (després que el DOM carregui)
-document.addEventListener('DOMContentLoaded', ()=>{
+// optional: seed some example data for testing (comment out if not wanted)
+/*
+respostes.push({id:nextId++,grup:'DAW1A',puntuacio:4,comentari:'Tot clar',data:new Date().toISOString()});
+respostes.push({id:nextId++,grup:'DAW1B',puntuacio:3,comentari:'Millorar exemples',data:new Date().toISOString()});
+updatePanel();
+*/
+
+// Inicialitzar gràfiques i carregar respostes al final (després que el DOM carregui)
+document.addEventListener('DOMContentLoaded', async ()=>{
+    supabaseClient = createSupabaseClient();
     initCharts();
-    updatePanel();
+    await loadResponses();
 });
